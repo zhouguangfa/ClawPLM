@@ -96,4 +96,7 @@ kafka-logs/
 kubectl-*
 .kubecfg
 
+# Exclude OpenClaw configuration files
+openclaw-config/
+
 # End of https://www.toptal.com/developers/gitignore/api/java,maven,spring,mysql,vue,redis,kafka,docker,kubernetes
