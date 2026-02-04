@@ -10,16 +10,16 @@ RUN apk add --no-cache python3 make g++ libc6-compat
 COPY package*.json ./
 
 # Install dependencies with fallback strategies
-RUN npm install --legacy-peer-deps --verbose || npm install --verbose
+RUN npm install --legacy-peer-deps --verbose
 
 # Copy source code
 COPY . .
 
-# Install any additional dependencies that might be needed
-RUN npm install --verbose || echo "Some packages failed to install but continuing..."
+# Use production vite config for build
+RUN if [ -f "vite.config.prod.js" ]; then cp vite.config.prod.js vite.config.js; fi
 
 # Build the application
-RUN npm run build || (echo "Build failed, checking dependencies..." && ls -la && cat package.json && npm list --depth=0 || true)
+RUN npm run build
 
 # Production stage
 FROM nginx:1.25.3-alpine AS production
