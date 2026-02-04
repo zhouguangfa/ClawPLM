@@ -9,8 +9,11 @@ RUN apk add --no-cache python3 make g++ libc6-compat
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies with additional flags to handle potential issues
-RUN npm install --legacy-peer-deps --verbose || npm install --verbose
+# Create a basic package-lock.json if it doesn't exist to satisfy npm ci
+RUN npm install --package-lock-only --ignore-scripts --verbose || true
+
+# Install dependencies with fallback strategies
+RUN npm ci --legacy-peer-deps --verbose || npm install --legacy-peer-deps --verbose
 
 # Copy source code
 COPY . .
