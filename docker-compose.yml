@@ -54,7 +54,9 @@ services:
 
   # Backend Services
   api-gateway:
-    build: ./backend/api-gateway
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
     container_name: plm_api_gateway
     ports:
       - "8080:8080"
@@ -68,7 +70,9 @@ services:
       - plm_network
 
   pdm-service:
-    build: ./backend/pdm-service
+    build:
+      context: ./backend/pdm-service
+      dockerfile: Dockerfile
     container_name: plm_pdm_service
     ports:
       - "8081:8081"
@@ -82,7 +86,9 @@ services:
       - plm_network
 
   project-service:
-    build: ./backend/project-service
+    build:
+      context: ./backend/project-service
+      dockerfile: Dockerfile
     container_name: plm_project_service
     ports:
       - "8082:8082"
@@ -96,7 +102,9 @@ services:
       - plm_network
 
   workflow-service:
-    build: ./backend/workflow-service
+    build:
+      context: ./backend/workflow-service
+      dockerfile: Dockerfile
     container_name: plm_workflow_service
     ports:
       - "8083:8083"
