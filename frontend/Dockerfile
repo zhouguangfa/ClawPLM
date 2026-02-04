@@ -3,14 +3,14 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache python3 make g++
+# Install build dependencies for potential native modules
+RUN apk add --no-cache python3 make g++ libc6-compat
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies with legacy peer deps flag to handle potential conflicts
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
