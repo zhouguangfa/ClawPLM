@@ -1,5 +1,5 @@
 # Multi-stage build for pdm-service
-FROM maven:3.8.6-eclipse-temurin-17 AS builder
+FROM maven:3.8.6-openjdk-17 AS builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ COPY pdm-service/src ./pdm-service/src
 RUN mvn clean package -pl pdm-service -am -DskipTests
 
 # Runtime stage
-FROM eclipse-temurin:17-jre-alpine
+FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY --from=builder /app/pdm-service/target/plm-pdm-service.jar app.jar
 EXPOSE 8081

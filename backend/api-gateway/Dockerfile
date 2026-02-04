@@ -1,5 +1,5 @@
 # Multi-stage build for api-gateway service
-FROM maven:3.8.6-eclipse-temurin-17 AS builder
+FROM maven:3.8.6-openjdk-17 AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ COPY api-gateway/pom.xml ./api-gateway/pom.xml
 COPY api-gateway/src ./api-gateway/src
 
 # Runtime stage
-FROM eclipse-temurin:17-jre-alpine
+FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY --from=builder /app/api-gateway/target/plm-api-gateway.jar app.jar
 EXPOSE 8080
