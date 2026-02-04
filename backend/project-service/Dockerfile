@@ -12,7 +12,7 @@ COPY project-service/src ./project-service/src
 RUN mvn clean package -pl project-service -am -DskipTests
 
 # Runtime stage
-FROM openjdk:17-jdk-slim-buster
+FROM openjdk:17-jdk
 WORKDIR /app
 COPY --from=builder /app/project-service/target/plm-project-service.jar app.jar
 EXPOSE 8082
