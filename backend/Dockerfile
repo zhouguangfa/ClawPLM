@@ -11,17 +11,18 @@ COPY . .
 
 # Build specific service based on BUILD_SERVICE argument
 ARG BUILD_SERVICE=api-gateway
-RUN if [ "$BUILD_SERVICE" = "api-gateway" ] ; then \
-      mvn clean package -pl api-gateway -am -DskipTests ; \
-    elif [ "$BUILD_SERVICE" = "pdm-service" ] ; then \
-      mvn clean package -pl pdm-service -am -DskipTests ; \
-    elif [ "$BUILD_SERVICE" = "project-service" ] ; then \
-      mvn clean package -pl project-service -am -DskipTests ; \
-    elif [ "$BUILD_SERVICE" = "workflow-service" ] ; then \
-      mvn clean package -pl workflow-service -am -DskipTests ; \
-    else \
-      mvn clean package -pl api-gateway -am -DskipTests ; \
-    fi
+RUN case ${BUILD_SERVICE} in \
+      "api-gateway") \
+        mvn clean package -pl api-gateway -am -DskipTests ;; \
+      "pdm-service") \
+        mvn clean package -pl pdm-service -am -DskipTests ;; \
+      "project-service") \
+        mvn clean package -pl project-service -am -DskipTests ;; \
+      "workflow-service") \
+        mvn clean package -pl workflow-service -am -DskipTests ;; \
+      *) \
+        mvn clean package -pl api-gateway -am -DskipTests ;; \
+    esac
 
 # Runtime stage
 FROM eclipse-temurin:17-jre
@@ -29,7 +30,7 @@ WORKDIR /app
 
 # Copy the appropriate jar file based on service name
 ARG BUILD_SERVICE=api-gateway
-COPY --from=builder /app/$BUILD_SERVICE/target/plm-$BUILD_SERVICE.jar app.jar
+COPY --from=builder /app/${BUILD_SERVICE}/target/plm-${BUILD_SERVICE}.jar app.jar
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
