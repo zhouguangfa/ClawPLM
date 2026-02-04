@@ -12,7 +12,7 @@ COPY pdm-service/src ./pdm-service/src
 RUN mvn clean package -pl pdm-service -am -DskipTests
 
 # Runtime stage
-FROM openjdk:17.0.1-jdk-slim
+FROM openjdk:17-jdk-slim-buster
 WORKDIR /app
 COPY --from=builder /app/pdm-service/target/plm-pdm-service.jar app.jar
 EXPOSE 8081
