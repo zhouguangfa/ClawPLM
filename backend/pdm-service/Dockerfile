@@ -29,7 +29,7 @@ RUN mvn clean compile -B && \
     mvn package -DskipTests -B
 
 # Runtime stage
-FROM eclipse-temurin:17-jre
+FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY --from=builder /app/target/plm-pdm-service.jar app.jar
 EXPOSE 8081
