@@ -9,7 +9,7 @@ COPY api-gateway/pom.xml ./api-gateway/pom.xml
 COPY api-gateway/src ./api-gateway/src
 
 # Runtime stage
-FROM openjdk:17.0.8-jdk-slim
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=builder /app/api-gateway/target/plm-api-gateway.jar app.jar
 EXPOSE 8080
