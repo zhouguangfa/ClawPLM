@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: plm_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: plm_db
+      MYSQL_USER: plm_user
+      MYSQL_PASSWORD: plm_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - plm_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: plm_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - plm_network
+
+  # Apache Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: plm_zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - plm_network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: plm_kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - plm_network
+
+  # Backend Services
+  api-gateway:
+    build: ./backend/api-gateway
+    container_name: plm_api_gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - plm_network
+
+  pdm-service:
+    build: ./backend/pdm-service
+    container_name: plm_pdm_service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - plm_network
+
+  project-service:
+    build: ./backend/project-service
+    container_name: plm_project_service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - plm_network
+
+  workflow-service:
+    build: ./backend/workflow-service
+    container_name: plm_workflow_service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - plm_network
+
+  # Frontend
+  frontend:
+    build: ./frontend
+    container_name: plm_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - plm_network
+
+volumes:
+  mysql_data:
+
+networks:
+  plm_network:
+    driver: bridge
