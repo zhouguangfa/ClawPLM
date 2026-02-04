@@ -29,7 +29,7 @@ RUN mvn clean compile -B && \
     mvn package -DskipTests -B
 
 # Runtime stage
-FROM openjdk:17
+FROM dhi/pkg-openjdk17
 WORKDIR /app
 COPY --from=builder /app/target/plm-api-gateway.jar app.jar
 EXPOSE 8080
