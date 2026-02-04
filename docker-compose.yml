@@ -111,7 +111,9 @@ services:
 
   # Frontend
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: plm_frontend
     ports:
       - "80:80"
