@@ -12,7 +12,7 @@ COPY workflow-service/src ./workflow-service/src
 RUN mvn clean package -pl workflow-service -am -DskipTests
 
 # Runtime stage
-FROM openjdk:17.0.1-jdk-slim
+FROM openjdk:17-jdk
 WORKDIR /app
 COPY --from=builder /app/workflow-service/target/plm-workflow-service.jar app.jar
 EXPOSE 8083
