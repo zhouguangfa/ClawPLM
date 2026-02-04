@@ -7,9 +7,6 @@ WORKDIR /app
 COPY pom.xml .
 COPY project-service/pom.xml ./project-service/pom.xml
 COPY project-service/src ./project-service/src
-COPY api-gateway/pom.xml ./api-gateway/pom.xml 2>/dev/null || echo "Skipping optional module"
-COPY pdm-service/pom.xml ./pdm-service/pom.xml 2>/dev/null || echo "Skipping optional module"
-COPY workflow-service/pom.xml ./workflow-service/pom.xml 2>/dev/null || echo "Skipping optional module"
 
 # Build only the project-service module
 RUN mvn clean package -pl project-service -am -DskipTests
