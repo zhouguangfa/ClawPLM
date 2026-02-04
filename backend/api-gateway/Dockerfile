@@ -12,6 +12,9 @@ COPY ../pom.xml .
 COPY pom.xml .
 COPY src ./src
 
+# First, try to resolve dependencies
+RUN mvn dependency:resolve -B
+
 # Build the api-gateway module
 RUN mvn clean package -DskipTests -B
 
