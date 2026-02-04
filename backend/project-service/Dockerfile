@@ -8,7 +8,7 @@ COPY ../pom.xml .
 COPY pom.xml .
 COPY src ./src
 
-# Build only the project-service module
+# Build the application
 RUN mvn clean package -DskipTests
 
 # Runtime stage
