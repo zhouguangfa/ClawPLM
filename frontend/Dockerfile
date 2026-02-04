@@ -1,10 +1,10 @@
 # Multi-stage build for frontend
-FROM node:18-alpine AS builder
+FROM node:18 AS builder
 
 WORKDIR /app
 
 # Install build dependencies for potential native modules
-RUN apk add --no-cache python3 make g++ libc6-compat
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package*.json ./
@@ -22,7 +22,7 @@ RUN if [ -f "vite.config.prod.js" ]; then cp vite.config.prod.js vite.config.js;
 RUN npm run build
 
 # Production stage
-FROM nginx:alpine AS production
+FROM nginx:stable
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 
