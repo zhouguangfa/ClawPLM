@@ -17,6 +17,7 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - plm_network
+    restart: unless-stopped
 
   # Redis Cache
   redis:
@@ -26,6 +27,7 @@ services:
       - "6379:6379"
     networks:
       - plm_network
+    restart: unless-stopped
 
   # Apache Kafka
   zookeeper:
@@ -36,6 +38,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - plm_network
+    restart: unless-stopped
 
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -51,6 +54,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - plm_network
+    restart: unless-stopped
 
   # Backend Services
   api-gateway:
@@ -68,6 +72,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
     networks:
       - plm_network
+    restart: unless-stopped
 
   pdm-service:
     build:
@@ -84,6 +89,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
     networks:
       - plm_network
+    restart: unless-stopped
 
   project-service:
     build:
@@ -100,6 +106,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
     networks:
       - plm_network
+    restart: unless-stopped
 
   workflow-service:
     build:
@@ -116,6 +123,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
     networks:
       - plm_network
+    restart: unless-stopped
 
   # Frontend
   frontend:
@@ -129,6 +137,7 @@ services:
       - api-gateway
     networks:
       - plm_network
+    restart: unless-stopped
 
 volumes:
   mysql_data:
