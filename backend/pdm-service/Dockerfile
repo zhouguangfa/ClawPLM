@@ -3,7 +3,7 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
 
-# Create a minimal settings.xml with mirror configuration
+# Create a comprehensive settings.xml with mirror configuration
 RUN mkdir -p /root/.m2 && \
     echo '<?xml version="1.0" encoding="UTF-8"?>' > /root/.m2/settings.xml && \
     echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"' >> /root/.m2/settings.xml && \
@@ -11,10 +11,10 @@ RUN mkdir -p /root/.m2 && \
     echo '          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">' >> /root/.m2/settings.xml && \
     echo '  <mirrors>' >> /root/.m2/settings.xml && \
     echo '    <mirror>' >> /root/.m2/settings.xml && \
-    echo '      <id>aliyun</id>' >> /root/.m2/settings.xml && \
-    echo '      <name>Aliyun Mirror</name>' >> /root/.m2/settings.xml && \
-    echo '      <url>https://maven.aliyun.com/repository/central</url>' >> /root/.m2/settings.xml && \
-    echo '      <mirrorOf>central</mirrorOf>' >> /root/.m2/settings.xml && \
+    echo '      <id>aliyunmaven</id>' >> /root/.m2/settings.xml && \
+    echo '      <mirrorOf>*</mirrorOf>' >> /root/.m2/settings.xml && \
+    echo '      <name>aliyun mirror</name>' >> /root/.m2/settings.xml && \
+    echo '      <url>https://maven.aliyun.com/repository/public</url>' >> /root/.m2/settings.xml && \
     echo '    </mirror>' >> /root/.m2/settings.xml && \
     echo '  </mirrors>' >> /root/.m2/settings.xml && \
     echo '</settings>' >> /root/.m2/settings.xml
@@ -24,11 +24,12 @@ COPY ../pom.xml .
 COPY pom.xml .
 COPY src ./src
 
-# First, resolve all dependencies
-RUN mvn dependency:go-offline -q
+# Set Maven options for better performance and memory management
+ENV MAVEN_OPTS="-Xmx2048m"
 
-# Then compile and package the application
-RUN mvn clean package -DskipTests
+# Compile and package the application directly
+RUN mvn clean compile -DskipTests && \
+    mvn package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-alpine
