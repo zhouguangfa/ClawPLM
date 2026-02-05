@@ -24,9 +24,11 @@ COPY ../pom.xml .
 COPY pom.xml .
 COPY src ./src
 
-# Build the workflow-service module directly without dependency resolution first
-RUN mvn clean compile -B && \
-    mvn package -DskipTests -B
+# First, resolve all dependencies
+RUN mvn dependency:go-offline -q
+
+# Then compile and package the application
+RUN mvn clean package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-alpine
