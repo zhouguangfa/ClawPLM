@@ -1,11 +1,22 @@
-# Simple runtime image for api-gateway
-FROM eclipse-temurin:21-alpine
+# Multi-stage build for api-gateway service
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
 
-# Copy pre-built jar file
-COPY target/plm-api-gateway.jar app.jar
+# Copy the parent pom and the specific module
+COPY ../pom.xml .
+COPY pom.xml .
+COPY src ./src
 
+# Create settings.xml for faster dependency downloads
+COPY ../settings.xml /root/.m2/settings.xml
+
+# Build the application
+RUN mvn clean package -DskipTests -Dmaven.test.skip=true -e
+
+# Runtime stage
+FROM eclipse-temurin:21-alpine
+WORKDIR /app
+COPY --from=builder /app/target/plm-api-gateway.jar app.jar
 EXPOSE 8080
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
