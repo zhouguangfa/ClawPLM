@@ -24,8 +24,11 @@ RUN mkdir -p /root/.m2 && \
     echo '  </mirrors>' >> /root/.m2/settings.xml && \
     echo '</settings>' >> /root/.m2/settings.xml
 
+# Set environment variables for Maven
+ENV MAVEN_OPTS="-Xmx2048m -Dmaven.repo.local=/root/.m2/repository"
+
 # Build the application
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests -e
 
 # Runtime stage
 FROM eclipse-temurin:21-alpine

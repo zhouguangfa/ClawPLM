@@ -24,8 +24,27 @@ RUN mkdir -p /root/.m2 && \
     echo '  </mirrors>' >> /root/.m2/settings.xml && \
     echo '</settings>' >> /root/.m2/settings.xml
 
-# Build the application
-RUN mvn clean package -DskipTests
+# Set environment variables for Maven
+ENV MAVEN_OPTS="-Xmx2048m -Dmaven.repo.local=/root/.m2/repository"
+
+# Print information about the build environment
+RUN echo "=== Build Environment Information ===" && \
+    java -version && \
+    mvn -version && \
+    echo "=== Working Directory Contents ===" && \
+    ls -la && \
+    echo "=== Source Directory Contents ===" && \
+    ls -la src && \
+    echo "=== POM Content ===" && \
+    cat pom.xml
+
+# Install parent POM locally to ensure it's available
+RUN mvn install:install-file -Dfile=../pom.xml -DgroupId=com.plm -DartifactId=plm-parent -Dversion=1.0.0 -Dpackaging=pom || echo "Parent POM installation skipped"
+
+# Build the application with verbose logging to diagnose issues
+RUN mvn clean compile -X || \
+    mvn clean compile -Dmaven.test.skip=true -e || \
+    mvn clean package -DskipTests -e
 
 # Runtime stage
 FROM eclipse-temurin:21-alpine
