@@ -34,10 +34,11 @@ The system follows a microservices architecture pattern with the following compo
 
 ### Prerequisites
 - Docker and Docker Compose
-- Java 17
-- Node.js 16+
+- Java 21 (for local development)
+- Maven 3.9+ (for local development)
+- Node.js 18+ (for frontend development)
 
-### Method 1: Using Docker Compose (Recommended)
+### Method 1: Full Docker Deployment (Recommended)
 
 1. Clone the repository:
 ```bash
@@ -45,139 +46,102 @@ git clone https://github.com/zhouguangfa/ClawPLM.git
 cd ClawPLM
 ```
 
-2. Start all services using Docker Compose:
-```bash
-docker-compose up -d
-```
-
-3. Wait for all containers to start (approximately 2-3 minutes):
-```bash
-docker-compose logs -f
-```
-
-4. Access the applications:
-   - Frontend: http://localhost
-   - API Gateway: http://localhost:8080
-   - MySQL: localhost:3306
-   - Redis: localhost:6379
-   - Kafka: localhost:9092
-
-### Method 2: Running Services Individually
-
-#### 1. Database Setup
-First, ensure MySQL is running and create the database:
-```bash
-# Start MySQL container
-docker run -d --name mysql-plm -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=plm_db -p 3306:3306 mysql:8.0
-
-# Execute the init.sql script
-docker cp init.sql mysql-plm:/tmp/init.sql
-docker exec -it mysql-plm mysql -u root -prootpassword plm_db -e "SOURCE /tmp/init.sql;"
-```
-
-#### 2. Start Supporting Services
-```bash
-# Start Redis
-docker run -d --name redis-plm -p 6379:6379 redis:7-alpine
-
-# Start Kafka (with Zookeeper)
-docker run -d --name zookeeper -e ZOOKEEPER_CLIENT_PORT=2181 -e ZOOKEEPER_TICK_TIME=2000 confluentinc/cp-zookeeper:latest
-docker run -d --name kafka -e KAFKA_BROKER_ID=1 -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 -p 9092:9092 --link zookeeper confluentinc/cp-kafka:latest
-```
-
-#### 3. Build and Run Backend Services
-```bash
-# Navigate to backend directory
-cd backend
-
-# Build the project
-mvn clean install
-
-# Run services individually:
-# Terminal 1: Start API Gateway
-cd api-gateway
-../mvnw spring-boot:run
-
-# Terminal 2: Start PDM Service
-cd ../pdm-service
-../mvnw spring-boot:run
-
-# Terminal 3: Start Project Service
-cd ../project-service
-../mvnw spring-boot:run
-
-# Terminal 4: Start Workflow Service
-cd ../workflow-service
-../mvnw spring-boot:run
-```
-
-#### 4. Run Frontend
-```bash
-# Navigate to frontend directory
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-### Method 3: Using Maven and NPM (Development Mode)
-
-1. Install dependencies:
+2. Build the backend services locally:
 ```bash
 cd backend
-mvn clean install
-
-cd ../frontend
-npm install
+mvn clean package -DskipTests
+cd ..
 ```
 
-2. Start all services:
+3. Build the frontend (optional, if making changes):
 ```bash
-# Terminal 1: Start supporting services
-docker-compose up mysql redis kafka zookeeper
-
-# Terminal 2: Start backend services
-cd backend/api-gateway
-../mvnw spring-boot:run
-
-# Terminal 3: Start PDM service
-cd backend/pdm-service
-../mvnw spring-boot:run
-
-# Terminal 4: Start Project service
-cd backend/project-service
-../mvnw spring-boot:run
-
-# Terminal 5: Start Workflow service
-cd backend/workflow-service
-../mvnw spring-boot:run
-
-# Terminal 6: Start frontend
 cd frontend
-npm run dev
+npm install
+npm run build
+cd ..
+```
+
+4. Start the entire system:
+```bash
+docker-compose up --build
+```
+
+Access the applications:
+- Frontend: http://localhost
+- API Gateway: http://localhost:8080
+- PDM Service: http://localhost:8081
+- Project Service: http://localhost:8082
+- Workflow Service: http://localhost:8083
+
+### Method 2: Development Mode
+
+For development, you can run services individually:
+
+1. Start infrastructure services:
+   ```bash
+   docker-compose up mysql redis kafka
+   ```
+
+2. Run backend services directly:
+   ```bash
+   cd backend/api-gateway
+   mvn spring-boot:run
+   
+   cd ../pdm-service
+   mvn spring-boot:run
+   
+   cd ../project-service
+   mvn spring-boot:run
+   
+   cd ../workflow-service
+   mvn spring-boot:run
+   ```
+
+3. Run frontend:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+### Method 3: Using Docker Compose with Pre-built JARs (Alternative)
+
+If you encounter build issues, you can use the pre-built JAR approach:
+
+1. Clone the repository:
+```bash
+git clone https://github.com/zhouguangfa/ClawPLM.git
+cd ClawPLM
+```
+
+2. Ensure you have JAR files in place (either by building locally or obtaining pre-built ones):
+```bash
+# Make sure target directories exist with JAR files
+ls -la backend/api-gateway/target/
+ls -la backend/pdm-service/target/
+ls -la backend/project-service/target/
+ls -la backend/workflow-service/target/
+```
+
+3. Start services with Docker Compose:
+```bash
+docker-compose up --build
 ```
 
 ## Configuration
 
 ### Environment Variables
-The application can be configured using environment variables:
+The application can be configured using environment variables defined in docker-compose.yml:
 
 #### Backend Services
-- `SPRING_PROFILES_ACTIVE`: Profile to use (default: `dev`)
-- `MYSQL_HOST`: MySQL host (default: `localhost`)
-- `MYSQL_PORT`: MySQL port (default: `3306`)
-- `MYSQL_DATABASE`: Database name (default: `plm_db`)
-- `MYSQL_USER`: Database user (default: `plm_user`)
-- `MYSQL_PASSWORD`: Database password (default: `plm_password`)
-- `REDIS_HOST`: Redis host (default: `localhost`)
-- `REDIS_PORT`: Redis port (default: `6379`)
-- `KAFKA_BOOTSTRAP_SERVERS`: Kafka servers (default: `localhost:9092`)
+- `SPRING_PROFILES_ACTIVE`: Profile to use (default: `docker`)
+- `SERVER_PORT`: Service port
+- `SPRING_DATASOURCE_URL`: Database connection URL
+- `SPRING_REDIS_HOST`: Redis host
+- `SPRING_KAFKA_BOOTSTRAP_SERVERS`: Kafka servers
 
 #### Frontend
-- `VUE_APP_API_BASE_URL`: Base URL for API (default: `http://localhost:8080`)
+- `API_BASE_URL`: Base URL for API (default: `http://api-gateway:8080`)
 
 ## Project Structure
 ```
@@ -187,10 +151,16 @@ ClawPLM/
 │   ├── pdm-service/         # Product Data Management service
 │   ├── project-service/     # Project Management service
 │   ├── workflow-service/    # Workflow Management service
-│   └── pom.xml              # Parent POM file
+│   ├── pom.xml              # Parent POM file
+│   └── settings.xml         # Maven settings
 ├── frontend/                # Vue.js frontend application
+│   ├── src/                 # Source code
+│   ├── package.json         # Dependencies
+│   ├── vite.config.js       # Dev configuration
+│   ├── vite.config.prod.js  # Production configuration
+│   ├── index.html           # Entry HTML file
+│   └── nginx.conf           # Nginx configuration
 ├── docker-compose.yml       # Docker Compose configuration
-├── Dockerfile               # Docker configuration for backend
 ├── init.sql                 # Database initialization script
 └── README.md                # This file
 ```
@@ -233,7 +203,15 @@ The frontend includes:
 ### Common Issues
 1. **Port conflicts**: Ensure ports 80, 8080-8083, 3306, 6379, 9092 are available
 2. **Database connection errors**: Verify MySQL is running and credentials are correct
-3. **Service discovery issues**: Ensure all services are registered with Eureka
+3. **Service startup delays**: Backend services may take 1-2 minutes to fully start
+4. **Maven build issues**: Ensure Java 21 and Maven 3.9+ are installed
+
+### Build Troubleshooting
+If you encounter Maven build failures:
+1. Check your Java version: `java -version` (should be Java 21)
+2. Check your Maven version: `mvn -version` (should be 3.9+)
+3. Clear Maven cache: `mvn dependency:purge-local-repository`
+4. Ensure all POM files have correct dependencies and versions
 
 ### Useful Commands
 ```bash
@@ -248,6 +226,12 @@ docker-compose down
 
 # Clean up everything including volumes
 docker-compose down -v
+
+# Force rebuild all services
+docker-compose up --build --force-recreate
+
+# View logs in real-time
+docker-compose logs -f
 ```
 
 ## Contributing
