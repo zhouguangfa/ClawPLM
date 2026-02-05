@@ -9,7 +9,7 @@ COPY pom.xml .
 COPY src ./src
 
 # Create settings.xml for faster dependency downloads
-COPY ../settings.xml /root/.m2/settings.xml
+COPY settings.xml /root/.m2/settings.xml
 
 # Build the application
 RUN mvn clean package -DskipTests -Dmaven.test.skip=true -e
