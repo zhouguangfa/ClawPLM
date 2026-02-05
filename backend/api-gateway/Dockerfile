@@ -4,9 +4,9 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 WORKDIR /app
 
 # Copy the parent pom and the specific module
-COPY pom.xml ../pom.xml
-COPY api-gateway/pom.xml ./pom.xml
-COPY api-gateway/src ./src
+COPY ../pom.xml .
+COPY pom.xml .
+COPY src ./src
 
 # Create settings.xml for faster dependency downloads
 RUN mkdir -p /root/.m2 && \
