@@ -1,5 +1,5 @@
 # Multi-stage build for pdm-service
-FROM maven:3.8.4-openjdk-21 AS builder
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ RUN mvn clean compile -B && \
     mvn package -DskipTests -B
 
 # Runtime stage
-FROM dhi/pkg-openjdk21
+FROM eclipse-temurin:21-alpine
 WORKDIR /app
 COPY --from=builder /app/target/plm-pdm-service.jar app.jar
 EXPOSE 8081
