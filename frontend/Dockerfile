@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt
 COPY package*.json ./
 
 # Install dependencies with fallback strategies
-RUN npm install --legacy-peer-deps --verbose
+RUN npm ci --legacy-peer-deps --verbose || npm install --legacy-peer-deps --verbose
 
 # Copy source code
 COPY . .
@@ -18,8 +18,8 @@ COPY . .
 # Use production vite config for build
 RUN if [ -f "vite.config.prod.js" ]; then cp vite.config.prod.js vite.config.js; fi
 
-# Build the application
-RUN npm run build
+# Build the application with detailed logging
+RUN npm run build --verbose || (echo "Build failed, listing files for debugging:" && ls -la && ls -la src/ && cat vite.config.js && npm run build)
 
 # Production stage
 FROM nginx:stable
